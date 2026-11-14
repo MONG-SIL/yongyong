@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <title>아이케어 용인 이용 안내</title>
+  <style>
+    @page { size: A4; margin: 0; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+      color: #5a391d;
+      background: #fff;
+    }
+    .page {
+      width: 210mm;
+      height: 297mm;
+      padding: 16mm 16mm 14mm;
+      break-after: page;
+      page-break-after: always;
+      display: flex;
+      flex-direction: column;
+      background: #fffaf2;
+    }
+    .page:last-child { break-after: auto; page-break-after: auto; }
+    .eyebrow {
+      margin: 0;
+      color: #b29277;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+    }
+    h1 {
+      margin: 6px 0 0;
+      font-size: 34px;
+      line-height: 1.25;
+      font-weight: 800;
+    }
+    h2 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.35;
+    }
+    p { margin: 0; }
+    .lead {
+      margin-top: 10px;
+      font-size: 15px;
+      line-height: 1.7;
+      color: #7f4a1d;
+    }
+    .hero {
+      margin-top: 8mm;
+      width: 100%;
+      height: 145mm;
+      object-fit: contain;
+      background: #fff;
+      border-radius: 18px;
+    }
+    .steps {
+      margin-top: 8mm;
+      display: flex;
+      flex-direction: column;
+      gap: 4mm;
+    }
+    .step {
+      display: flex;
+      gap: 4mm;
+      align-items: flex-start;
+    }
+    .num {
+      width: 28px;
+      height: 28px;
+      flex: none;
+      border-radius: 14px;
+      background: #e9a23b;
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+      font-weight: 800;
+    }
+    .step b { display: block; font-size: 15px; }
+    .step span { display: block; margin-top: 2px; font-size: 13px; line-height: 1.55; color: #7f4a1d; }
+    .split {
+      margin-top: 6mm;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6mm;
+      align-items: start;
+    }
+    figure { margin: 0; }
+    figure img {
+      width: 100%;
+      height: 78mm;
+      object-fit: contain;
+      background: #fff;
+      border-radius: 16px;
+    }
+    figcaption { margin-top: 3mm; }
+    figcaption b { display: block; font-size: 16px; }
+    figcaption span { display: block; margin-top: 4px; font-size: 12.5px; line-height: 1.6; color: #7f4a1d; }
+    .foot {
+      margin-top: auto;
+      padding-top: 6mm;
+      font-size: 11px;
+      color: #b29277;
+    }
+  </style>
+</head>
+<body>
+  <section class="page">
+    <p class="eyebrow">용인시 맞춤 돌봄</p>
+    <h1>아이케어 용인<br />이용 안내</h1>
+    <p class="lead">우리 가족에게 맞는 돌봄·배움 정책과 동네 시설을 한 곳에서 찾아요. 아래 순서만 따라오면 됩니다.</p>
+    <img class="hero" src="images/family.png" alt="아이와 보호자, 구름 캐릭터" />
+    <div class="steps">
+      <div class="step"><b class="num">1</b><p><b>가족 정보를 저장해요</b><span>동네, 학년, 하교 시간과 퇴근 시간을 입력해요.</span></p></div>
+      <div class="step"><b class="num">2</b><p><b>정책을 고르고 확인해요</b><span>정책 필터로 둘러보고, 맞춤 혜택에서 우리 집에 해당하는 정책을 봐요.</span></p></div>
+      <div class="step"><b class="num">3</b><p><b>장소와 일정을 남겨요</b><span>지도에서 가까운 시설을 보고, 신청 마감과 상담을 캘린더에 저장해요.</span></p></div>
+    </div>
+  </section>
+
+  <section class="page">
+    <p class="eyebrow">정책</p>
+    <h2>필요한 지원을 찾아요</h2>
+    <div class="split">
+      <figure>
+        <img src="images/search.png" alt="양육 지원 정책을 검색하는 구름 캐릭터" />
+        <figcaption>
+          <b>정책을 검색해요</b>
+          <span>홈의 정책 필터에서 전체, 돌봄, 교육비, 가족, 생활로 나눠 볼 수 있어요. 이름이나 키워드로도 찾을 수 있어요.</span>
+        </figcaption>
+      </figure>
+      <figure>
+        <img src="images/policy.jpg" alt="아동 돌봄 정책 확인 화면을 든 구름 캐릭터" />
+        <figcaption>
+          <b>우리 집 조건을 확인해요</b>
+          <span>맞춤 혜택은 저장한 가족 정보로 해당 여부를 보여 줘요. 신청 자격, 지원 내용, 필요 서류, 신청 기간을 정책 상세에서 확인해요.</span>
+        </figcaption>
+      </figure>
+    </div>
+    <p class="foot">신청 링크와 서류 발급처는 정책마다 다를 수 있어요. 화면의 안내를 먼저 확인해 주세요.</p>
+  </section>
+
+  <section class="page">
+    <p class="eyebrow">돌봄 장소와 일정</p>
+    <h2>가까운 곳과 날짜를 챙겨요</h2>
+    <div class="split">
+      <figure>
+        <img src="images/map.jpg" alt="지도 위 돌봄 장소를 가리키는 구름 캐릭터" />
+        <figcaption>
+          <b>지도에서 시설을 봐요</b>
+          <span>돌봄 지도에서 동네 시설 위치와 운영 정보를 확인해요. 하교 후 빈 시간은 공백 분석에서 이어서 볼 수 있어요.</span>
+        </figcaption>
+      </figure>
+      <figure>
+        <img src="images/calendar.png" alt="캘린더와 시계를 보여주는 구름 캐릭터" />
+        <figcaption>
+          <b>일정을 남겨요</b>
+          <span>내 돌봄 캘린더에 신청 마감, 상담, 개인 메모를 저장해요. 저장한 정책에 날짜가 있으면 시작일과 마감일도 올릴 수 있어요.</span>
+        </figcaption>
+      </figure>
+    </div>
+    <p class="foot">아이케어 용인 · 용인시 맞춤 돌봄 안내. 실시간 이용 현황은 시설에 문의해 주세요.</p>
+  </section>
+</body>
+</html>
