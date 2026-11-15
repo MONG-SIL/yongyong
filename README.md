@@ -1,32 +1,19 @@
-# React + TypeScript + Vite
+# 아이케어 용인
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+용인시 아동 돌봄·배움 정책을 가구 조건에 맞춰 찾고, 동네 시설과 돌봄 공백을 함께 보는 프론트엔드입니다.
 
-Currently, two official plugins are available:
+## 실행
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+브라우저에서 `http://127.0.0.1:5173` 으로 엽니다.
+
+## 주소
+
+- 서비스: https://yongpale.kro.kr
+- API: https://api.yongpale.kro.kr
+
+API 주소는 `VITE_API_ORIGIN` 으로 바꿀 수 있습니다. 값이 없으면 `https://api.yongpale.kro.kr` 을 사용합니다.
