@@ -13,6 +13,14 @@ import type { Grade, Situation } from "../data";
 import { Icon } from "../icons";
 import { gradeFromBirth, newChild, toggleSituation, useStore } from "../store";
 
+function compact(name: string) {
+  return name.replace(/\s/g, "");
+}
+
+function placeStem(name: string) {
+  return compact(name).replace(/\d+(?=동)/g, "").replace(/동$/, "");
+}
+
 const HOUR_OPTIONS = Array.from({ length: 28 }, (_, index) => {
   const minutes = 7 * 60 + index * 30;
   return `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
@@ -213,6 +221,44 @@ export function HouseholdPage() {
   const { household, districts, saveHousehold, notify } = useStore();
   const [draft, setDraft] = useState(household);
   const [saving, setSaving] = useState(false);
+  const [locating, setLocating] = useState(false);
+
+  function locate() {
+    if (!navigator.geolocation) {
+      notify("이 브라우저에서는 현재 위치를 쓸 수 없어요.");
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(async (position) => {
+      try {
+        const { latitude, longitude } = position.coords;
+        const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=ko`);
+        if (!response.ok) throw new Error("geocode");
+        const data = await response.json() as { locality?: string; localityInfo?: { administrative?: { name?: string }[] } };
+        const names = [
+          ...(data.localityInfo?.administrative ?? []).map((item) => item.name || ""),
+          data.locality || "",
+        ].map(compact);
+        const gu = Object.keys(districts).find((name) => names.some((item) => item.includes(compact(name))));
+        const dongs = gu ? districts[gu] ?? [] : [];
+        const dong = dongs.find((name) => names.some((item) => item.includes(compact(name))))
+          ?? dongs.find((name) => names.some((item) => placeStem(item) === placeStem(name)));
+        if (!gu || !dong) {
+          notify("용인시 안에서만 동네를 찾을 수 있어요.");
+          return;
+        }
+        setDraft((current) => ({ ...current, gu, dong }));
+        notify(`${gu} ${dong}으로 맞췄어요.`);
+      } catch {
+        notify("현재 위치로 동네를 찾지 못했어요.");
+      } finally {
+        setLocating(false);
+      }
+    }, () => {
+      setLocating(false);
+      notify("위치 권한을 허용해 주세요.");
+    }, { enableHighAccuracy: true, timeout: 10000 });
+  }
 
   async function save() {
     if (saving) return;
@@ -235,13 +281,16 @@ export function HouseholdPage() {
       />
       <div className="scroll stack">
         <label className="field">거주 동네
-          <div className="row">
+          <div className="row neighborhood">
             <select className="select" value={draft.gu} onChange={(e) => setDraft({ ...draft, gu: e.target.value, dong: districts[e.target.value]?.[0] ?? "" })}>
               {Object.keys(districts).map((gu) => <option key={gu}>{gu}</option>)}
             </select>
             <select className="select" value={draft.dong} onChange={(e) => setDraft({ ...draft, dong: e.target.value })}>
               {(districts[draft.gu] ?? []).map((dong) => <option key={dong}>{dong}</option>)}
             </select>
+            <button type="button" className="gps-btn" aria-label="현재 위치로 동네 찾기" disabled={locating} onClick={locate}>
+              <Icon name="target" size={18} />
+            </button>
           </div>
         </label>
         <div>

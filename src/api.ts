@@ -1,7 +1,17 @@
 import type { Category, DocumentItem, Facility, FacilityType, Grade, Household, MatchLabel, Policy, PolicyStatus, Situation } from "./data";
 import { GRADES, toMinutes } from "./data";
 
-export const SERVER_ORIGIN = "http://168.110.36.72:8080";
+export const SERVER_ORIGIN = (import.meta.env.VITE_API_ORIGIN || "https://api.yongpale.kro.kr").replace(/\/$/, "");
+
+let cookieSession = false;
+
+export function markServerSession(active: boolean) {
+  cookieSession = active;
+}
+
+export function hasServerSession() {
+  return cookieSession || Boolean(loadSession());
+}
 
 const AUTH_KEY = "icare-yongin-auth";
 
@@ -44,7 +54,12 @@ export function readHashSession(): Session | null {
 }
 
 export function kakaoLoginUrl() {
-  return `${SERVER_ORIGIN}/api/v1/auth/kakao`;
+  return `${SERVER_ORIGIN}/oauth2/authorization/kakao`;
+}
+
+function requestUrl(path: string) {
+  if (/^https?:\/\//.test(path)) return path;
+  return `${SERVER_ORIGIN}${path}`;
 }
 
 let refreshing: Promise<string | null> | null = null;
@@ -53,8 +68,9 @@ async function refreshAccess(): Promise<string | null> {
   const session = loadSession();
   if (!session) return null;
   if (!refreshing) {
-    refreshing = fetch("/api/v1/auth/refresh", {
+    refreshing = fetch(requestUrl("/api/v1/auth/refresh"), {
       method: "POST",
+      credentials: "include",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ refreshToken: session.refreshToken }),
     })
@@ -85,12 +101,12 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   if (session) headers.set("Authorization", `Bearer ${session.accessToken}`);
   if (init.body && !headers.has("Content-Type")) headers.set("Content-Type", "application/json");
 
-  let response = await fetch(path, { ...init, headers });
+  let response = await fetch(requestUrl(path), { ...init, headers, credentials: "include" });
   if (response.status === 401 && session && !path.endsWith("/auth/refresh")) {
     const next = await refreshAccess();
     if (next) {
       headers.set("Authorization", `Bearer ${next}`);
-      response = await fetch(path, { ...init, headers });
+      response = await fetch(requestUrl(path), { ...init, headers, credentials: "include" });
     }
   }
   if (response.status === 204) return undefined as T;
@@ -620,10 +636,9 @@ export function agreeTerms() {
 
 export function logoutSession() {
   const session = loadSession();
-  if (!session) return Promise.resolve();
   return api<void>("/api/v1/auth/logout", {
     method: "POST",
-    body: JSON.stringify({ refreshToken: session.refreshToken }),
+    body: JSON.stringify(session ? { refreshToken: session.refreshToken } : {}),
   }).catch(() => undefined);
 }
 

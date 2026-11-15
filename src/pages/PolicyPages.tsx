@@ -70,7 +70,7 @@ export function PolicyListPage() {
         </div>
         <div className="section-title">
           <p><b>{household.dong} 맞춤 정책</b> <span className="small faint">총 {shown.length}건</span></p>
-          <button className="click small muted" onClick={() => setSort(sort === "추천순" ? "마감 임박순" : sort === "마감 임박순" ? "혜택순" : "추천순")}>
+          <button className="click small muted sort-toggle" onClick={() => setSort(sort === "추천순" ? "마감 임박순" : sort === "마감 임박순" ? "혜택순" : "추천순")}>
             {sort} <Icon name="chevron" size={12} />
           </button>
         </div>

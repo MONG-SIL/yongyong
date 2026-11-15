@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Header, IconButton, Screen } from "../components";
-import { gradeBand } from "../data";
+import { formatDot, gradeBand } from "../data";
 import { Icon } from "../icons";
 import { useStore } from "../store";
 
@@ -34,12 +34,31 @@ export function SplashPage() {
 }
 
 export function HomePage() {
-  const { household, results, user, acceptTerms } = useStore();
+  const { household, results, user, acceptTerms, events } = useStore();
   const navigate = useNavigate();
   const matches = results.filter((item) => item.label !== "none");
   const child = household.children[0];
   const band = child ? gradeBand(child.grade) : "자녀 정보 없음";
   const [art] = useState(() => HOME_ART[Math.floor(Math.random() * HOME_ART.length)]);
+  const [noticeOpen, setNoticeOpen] = useState(false);
+  const todayEvents = events
+    .filter((event) => event.date === formatDot(new Date()))
+    .sort((a, b) => timeRank(a.time) - timeRank(b.time));
+  const soonEvents = events
+    .filter((event) => {
+      const left = daysFromToday(event.date);
+      return left >= 1 && left <= 7;
+    })
+    .sort((a, b) => daysFromToday(a.date) - daysFromToday(b.date) || timeRank(a.time) - timeRank(b.time));
+  const noticeEvents = todayEvents.length > 0 ? todayEvents : soonEvents;
+  useEffect(() => {
+    if (!noticeOpen) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setNoticeOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [noticeOpen]);
   return (
     <Screen nav>
       <Header
@@ -49,7 +68,7 @@ export function HomePage() {
             <strong>아이케어 용인</strong>
           </div>
         }
-        right={<IconButton name="bell" label="알림" onClick={() => navigate("/notifications")} />}
+        right={<IconButton name="bell" label="알림" onClick={() => setNoticeOpen(true)} />}
       />
       <div className="scroll with-nav stack home-scroll">
         {user?.termsRequired && (
@@ -105,8 +124,62 @@ export function HomePage() {
           <img src={art.src} alt={art.alt} />
         </div>
       </div>
+      {noticeOpen && (
+        <div className="notice-backdrop" onClick={() => setNoticeOpen(false)}>
+          <section
+            className="notice-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="today-notice-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="notice-head">
+              <h2 id="today-notice-title">{todayEvents.length > 0 ? "오늘 일정" : "7일 이내 일정"}</h2>
+              <button className="icon-btn cream" aria-label="닫기" onClick={() => setNoticeOpen(false)}>
+                <Icon name="close" size={16} />
+              </button>
+            </div>
+            {noticeEvents.length === 0 ? (
+              <p className="notice-empty">7일 이내 예정된 일정이 없어요.</p>
+            ) : (
+              <div className="notice-list">
+                {noticeEvents.map((event) => (
+                  <article key={event.id} className="notice-item">
+                    <span className="chip deep">{event.kind}</span>
+                    <h3>{event.title}</h3>
+                    <p>{noticeWhen(event.date, event.time, todayEvents.length > 0)}</p>
+                    {event.detail && <p className="detail">{event.detail}</p>}
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
+      )}
     </Screen>
   );
+}
+
+function timeRank(time: string) {
+  if (!time || time === "종일") return -1;
+  const [hour, minute] = time.split(":").map(Number);
+  if (Number.isNaN(hour)) return 0;
+  return hour * 60 + (minute || 0);
+}
+
+function daysFromToday(dot: string) {
+  const [year, month, day] = dot.split(".").map(Number);
+  if (!year || !month || !day) return Number.NaN;
+  const target = new Date(year, month - 1, day);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return Math.round((target.getTime() - today.getTime()) / 86400000);
+}
+
+function noticeWhen(date: string, time: string, today: boolean) {
+  if (today) return time;
+  const left = daysFromToday(date);
+  return `${date.slice(5)} · D-${left} · ${time}`;
 }
 
 export function ServicesPage() {

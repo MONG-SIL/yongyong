@@ -4,7 +4,7 @@ import { defineConfig } from 'vite'
 // https://vite.dev/config/
 const apiProxy = {
   "/api": {
-    target: "http://168.110.36.72:8080",
+    target: "https://api.yongpale.kro.kr",
     changeOrigin: true,
   },
 };

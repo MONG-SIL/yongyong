@@ -10,9 +10,11 @@ import {
   fetchFacility,
   fetchMe,
   fetchPolicyExtras,
+  hasServerSession,
   kakaoLoginUrl,
   loadSession,
   logoutSession,
+  markServerSession,
   readHashSession,
   saveHousehold,
   saveSession,
@@ -196,11 +198,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [toast]);
 
   useEffect(() => {
-    if (!loadSession()) return;
     let cancel = false;
     (async () => {
       try {
-        const [me, catalog] = await Promise.all([fetchMe(), fetchCatalog()]);
+        const me = await fetchMe();
+        if (cancel) return;
+        markServerSession(true);
+        setConnected(true);
+        const catalog = await fetchCatalog();
         if (cancel) return;
         setUser({
           name: me.name || me.nickname || "회원",
@@ -214,9 +219,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         if (Object.keys(catalog.districts).length) setRemoteDistricts(catalog.districts);
         setHouseholdId(catalog.householdId);
         if (catalog.household) setHousehold(catalog.household);
-        setConnected(true);
-      } catch {
-        if (!cancel) setToast("서버 정보를 불러오지 못했어요. 다시 로그인해 주세요.");
+      } catch (error) {
+        const status = error instanceof Error && "status" in error ? Number((error as { status: number }).status) : 0;
+        if (status === 401 || status === 403) {
+          markServerSession(false);
+          return;
+        }
+        if (!cancel && loadSession()) setToast("서버 정보를 불러오지 못했어요. 다시 로그인해 주세요.");
       }
     })();
     return () => {
@@ -266,6 +275,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       },
       logout: () => {
         logoutSession().finally(() => {
+          markServerSession(false);
           clearSession();
           setConnected(false);
           setRemoteMatches(null);
@@ -280,7 +290,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       updateHousehold: setHousehold,
       saveHousehold: async (next) => {
         setHousehold(next);
-        if (!loadSession()) return true;
+        if (!hasServerSession()) return true;
         try {
           let saved;
           try {
@@ -309,7 +319,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const checked = !current.includes(docId);
         const next = checked ? [...current, docId] : current.filter((item) => item !== docId);
         setCheckedDocs((prev) => ({ ...prev, [policyId]: next }));
-        if (loadSession() && /^\d+$/.test(policyId)) {
+        if (hasServerSession() && /^\d+$/.test(policyId)) {
           checkDocument(policyId, docId, checked).catch(() => setToast("서류 체크를 서버에 저장하지 못했어요."));
         }
       },
@@ -318,7 +328,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       ask: (question) => {
         const text = question.trim();
         if (!text) return;
-        if (!loadSession()) {
+        if (!hasServerSession()) {
           const reply = answerQuestion(text, household);
           setMessages((prev) => [
             ...prev,
@@ -357,7 +367,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         }
       },
       hydratePolicy: (id) => {
-        if (!loadSession() || !/^\d+$/.test(id)) return;
+        if (!hasServerSession() || !/^\d+$/.test(id)) return;
         fetchPolicyExtras(id)
           .then((extra) => {
             setRemoteMatches((prev) => prev?.map((item) => item.policy.id === id ? {
@@ -372,7 +382,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           .catch(() => undefined);
       },
       hydrateFacility: (id) => {
-        if (!loadSession() || !/^\d+$/.test(id)) return;
+        if (!hasServerSession() || !/^\d+$/.test(id)) return;
         fetchFacility(id)
           .then((facility) => {
             setRemoteFacilities((prev) => prev?.map((item) => item.id === id ? { ...item, ...facility, policyIds: item.policyIds } : item) ?? prev);
@@ -380,7 +390,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           .catch(() => undefined);
       },
       refreshGap: () => {
-        if (!loadSession()) {
+        if (!hasServerSession()) {
           setRemoteGap(null);
           return;
         }
